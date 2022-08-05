@@ -1,0 +1,9 @@
+Cloud;
+    - Cloudwatch
+    - SNS
+
+App;
+    - Hashing Algo
+
+Server;
+    - JWT Auth
