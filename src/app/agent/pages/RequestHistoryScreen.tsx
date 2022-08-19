@@ -9,16 +9,15 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import {Divider} from 'react-native-paper';
-import vars, {useIsLoggingInGlobal} from 'src/vars';
 
-import {SmallTextButton, FlushReq} from 'src/ui';
+import {SmallTextButton, FlushReq} from '../../../ui';
 
 import {Data} from '../helpers/Data';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import {Utils} from 'src/utils';
-import {flushreq} from 'src/types';
-import {Cards} from 'src/ui/Cards';
-import {Avatar} from 'src/ui/Avatar';
+import {Utils} from '../../../utils';
+import {flushreq} from '../../../types';
+import {Cards} from '../../../ui/Cards';
+import {Avatar} from '../../../ui/Avatar';
 
 export function RequestHistoryScreen({route, navigation}: any) {
   const {
@@ -88,10 +87,10 @@ export function RequestHistoryScreen({route, navigation}: any) {
         {(() => {
           let arr = [].concat
             .apply([], dataClients.map(client => client.reqs) as any)
-            .filter((req: flushreq) => req.status !== 'In progress');
+            .filter((req: flushreq) => req.status !== 'In progress')
           return arr.length > 0 ? (
             arr
-              .sort((a: any, b: any) => a.lodgedDate - b.lodgedDate)
+              .sort((a: any, b: any) => a.changedDate - b.changedDate)
               .map((req: flushreq) => {
                 return (
                   <FlushReq

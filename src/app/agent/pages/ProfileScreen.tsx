@@ -2,7 +2,7 @@ import React from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
 import { Avatar } from "react-native-paper";
 
-import { InputBox, SmallTextButton } from "src/ui";
+import { InputBox, SmallTextButton } from "../../../ui";
 
 export function ProfileScreen({ route, navigation }: any) {
   const [util_SyndicateShow, util_SyndicateShow_] = React.useState(false);

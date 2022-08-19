@@ -1,5 +1,5 @@
 import React from 'react';
-import {StyleProp, StyleSheet, TextStyle} from 'react-native';
+import {StyleProp, StyleSheet, TextStyle, View, ViewStyle} from 'react-native';
 import {TextInput, Text} from 'react-native-paper';
 
 export const InputBox = (props: {
@@ -10,12 +10,13 @@ export const InputBox = (props: {
   disabled?: boolean;
   secureTextEntry?: boolean;
   value?: string;
-  style?: any | StyleProp<TextStyle>;
+  textStyle?: StyleProp<TextStyle>;
+  style?: StyleProp<ViewStyle>;
   onChangeText?: ((text: string) => void) & Function;
   right?: Icon;
 }) => {
   return (
-    <>
+    <View style={props.style}>
       <Text variant="titleSmall" style={styles(props.isCenter).title}>
         {props.title}
       </Text>
@@ -27,7 +28,7 @@ export const InputBox = (props: {
         right={
           props.right
             ? getIcon_({
-                name: props.right?.name as string,
+                icon: props.right?.icon as string,
                 color: props.right?.color as string,
                 onPress: props.right?.onPress,
               })
@@ -38,12 +39,12 @@ export const InputBox = (props: {
         value={props.value}
         onChangeText={t => (props.onChangeText ? props.onChangeText(t) : null)}
         style={
-          props.style
-            ? {...styles(props.isCenter).input, ...props.style}
+          props.textStyle
+            ? {...styles(props.isCenter).input, ...props.textStyle as any}
             : styles(props.isCenter).input
         }
       />
-    </>
+    </View>
   );
 };
 
@@ -65,7 +66,7 @@ const styles = (isCenter?: boolean) =>
 export const getIcon_ = (props: Icon): React.ReactNode => {
   return (
     <TextInput.Icon
-      name={props.name}
+      name={props.icon}
       color={props.color}
       onPress={props.onPress}
     />
@@ -73,7 +74,7 @@ export const getIcon_ = (props: Icon): React.ReactNode => {
 };
 
 type Icon = {
-  name: string;
+  icon: string;
   color: string;
   onPress?: () => void;
 };

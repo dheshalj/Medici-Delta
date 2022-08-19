@@ -8,13 +8,20 @@ import { Backend } from "../../../backend";
 import { Data } from "../helpers/Data";
 
 export function ClientProfileScreen({ route, navigation }: any) {
+  const [snack, setSnack] = React.useState({
+    isVis: true,
+    msg: "Hi",
+    action: {
+      label: "Undo",
+      onPress: () => {},
+    },
+  });
+
   const client = {
     user: route.params.user as user,
     state: route.params.state as tabheader,
     parent: route.params.parent as string,
   };
-
-  console.log(client.state);
 
   return (
     <ScrollView
@@ -83,6 +90,8 @@ export function ClientProfileScreen({ route, navigation }: any) {
                         }
                         // TODO: Open areyousure Popup here
                         Data.updateClients(client.user.indicator);
+                        console.warn(`${client.parent} is now active`);
+                        navigation.pop(1);
                       }
                     );
                   },
@@ -106,6 +115,8 @@ export function ClientProfileScreen({ route, navigation }: any) {
                         }
                         // TODO: Open areyousure Popup here
                         Data.updateClients(client.user.indicator);
+                        console.warn(`${client.parent} is now rejected`);
+                        navigation.pop(1);
                       }
                     );
                   },
@@ -134,6 +145,12 @@ export function ClientProfileScreen({ route, navigation }: any) {
                         }
                         // TODO: Open areyousure Popup here
                         Data.updateClients(client.user.indicator);
+                        setSnack({
+                          isVis: true,
+                          msg: `${client.parent} is now deactive`,
+                          action: snack.action,
+                        });
+                        navigation.pop(2);
                       }
                     );
                   },
@@ -162,6 +179,8 @@ export function ClientProfileScreen({ route, navigation }: any) {
                         }
                         // TODO: Open areyousure Popup here
                         Data.updateClients(client.user.indicator);
+                        console.warn(`${client.parent} is now active`);
+                        navigation.pop(1);
                       }
                     );
                   },
@@ -190,6 +209,8 @@ export function ClientProfileScreen({ route, navigation }: any) {
                         }
                         // TODO: Open areyousure Popup here
                         Data.updateClients(client.user.indicator);
+                        console.warn(`${client.parent} is now active`);
+                        navigation.pop(1);
                       }
                     );
                   },

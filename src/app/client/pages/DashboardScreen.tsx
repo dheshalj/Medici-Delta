@@ -3,14 +3,11 @@ import React, { useState } from "react";
 import {
   Text,
   View,
-  BackHandler,
-  Image,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
 } from "react-native";
-import { Chip, Surface, Card, Title, Paragraph } from "react-native-paper";
-import vars, { useIsLoggingInGlobal } from "src/vars";
+import { Surface, Card, Paragraph } from "react-native-paper";
 
 import {
   LargeTextButton,
@@ -18,14 +15,14 @@ import {
   Charts,
   InputBox,
   PopUp,
-} from "src/ui";
+} from "../../../ui";
 
-import { Format, Utils } from "src/utils";
+import { Format, Utils } from "../../../utils";
 
-import { Backend } from "src/backend";
+import { Backend } from "../../../backend";
 import { Data } from "../helpers/Data";
-import { Cards } from "src/ui/Cards";
-import { Avatar } from "src/ui/Avatar";
+import { Cards } from "../../../ui/Cards";
+import { Avatar } from "../../../ui/Avatar";
 
 import Moment from "moment";
 Moment.locale("en");
@@ -56,10 +53,12 @@ export function DashboardScreen({ route, navigation }: any) {
 
   const todaysDate = new Date();
 
-  const [getDate, setDate] = useState(
+  const [getDate, setDate] = useState<Date | undefined>(
     new Date(todaysDate.getTime() + 3 * 24 * 60 * 60 * 1000)
   );
   const [open, setOpen] = useState(false);
+
+  const [popup_SuccessReq, setPopup_SuccessReq] = React.useState(false);
 
   const [isReqLoading, setReqLoading] = useState(false);
 
@@ -138,7 +137,7 @@ export function DashboardScreen({ route, navigation }: any) {
                 onChangeText={(t: any) =>
                   setAmountInUSD(Format.Amount(t, " ", 2500))
                 }
-                style={styles.flushreqinput}
+                textStyle={styles.flushreqinput}
               />
             </View>
             <View
@@ -174,9 +173,9 @@ export function DashboardScreen({ route, navigation }: any) {
                 disabled={getAmountCur === "LKR" ? false : true}
                 value={getAmountInLKR}
                 onChangeText={(t: any) =>
-                  setAmountInLKR(Format.Amount(t, " ", 2500*350))
+                  setAmountInLKR(Format.Amount(t, " ", 2500 * 350))
                 }
-                style={styles.flushreqinput}
+                textStyle={styles.flushreqinput}
               />
             </View>
           </View>
@@ -187,7 +186,7 @@ export function DashboardScreen({ route, navigation }: any) {
             right={{
               color: "#595959",
               onPress: () => setOpen(true),
-              name: "calendar-range",
+              icon: "calendar-range",
             }}
             value={dateFormat(getDate)}
             style={styles.flushreqinput}
@@ -236,7 +235,7 @@ export function DashboardScreen({ route, navigation }: any) {
                     console.error("error sending req");
                     return;
                   }
-                  console.warn("Successfully lodged !");
+                  setPopup_SuccessReq(true);
                 }
               );
               setReqLoading(false);
@@ -244,9 +243,21 @@ export function DashboardScreen({ route, navigation }: any) {
           />
         </Surface>
 
+        <PopUp.Info
+          type="info"
+          title="Your Request is lodged !"
+          body="Transfer period - 72 hours (minimum)"
+          button={{
+            text: "Go Back",
+            onPress: () => setPopup_SuccessReq(false),
+          }}
+          exception={true}
+          active={[popup_SuccessReq, setPopup_SuccessReq]}
+        />
+
         <PopUp.DatePickerModal
           methods={[open, setOpen, getDate, setDate]}
-          minimumDate={getDate}
+          minimumDate={new Date(todaysDate.getTime() + 3 * 24 * 60 * 60 * 1000)}
         />
       </View>
     </ScrollView>
@@ -254,9 +265,9 @@ export function DashboardScreen({ route, navigation }: any) {
 }
 
 function dateFormat(date: Date): string {
-  let da = Moment(date).format("DD")
-  let mo = Moment(date).format("MM")
-  let ye = Moment(date).format("YYYY")
+  let da = Moment(date).format("DD");
+  let mo = Moment(date).format("MM");
+  let ye = Moment(date).format("YYYY");
   return `${da} - ${mo} - ${ye}`;
 }
 
@@ -315,7 +326,6 @@ const styles = StyleSheet.create({
   flushreqinput: {
     width: "100%",
   },
-
   flushreqview: {
     flexDirection: "row",
     marginTop: 10,

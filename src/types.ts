@@ -12,6 +12,7 @@ export type flushreq = {
   amountInUSD: number;
   lodgedDate: number;
   status: 'In progress' | 'Accepted' | 'Declined';
+  changedDate: number | null,
   tobeflushedDate: number;
 };
 

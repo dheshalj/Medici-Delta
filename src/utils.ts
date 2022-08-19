@@ -21,6 +21,10 @@ export class Format {
     return (txt.substring(0, 3) + ' ' + txt.substring(3, 6)).trim();
   }
 
+  static DomainFormat(t: string): string {
+    return t.toLowerCase()
+  }
+
   static MobileNumberFormat(t: string): string {
     var txt = t
       .substring(3)

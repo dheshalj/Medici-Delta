@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useState } from "react";
-import { Text, useColorScheme, View } from "react-native";
+import { useColorScheme, View } from "react-native";
 import { DefaultTheme, Provider as PaperProvider } from "react-native-paper";
 import { useFonts } from "expo-font";
 
@@ -11,6 +11,8 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
 import { navigationRef } from "./helpers/RootNavigation";
+
+// Screens
 import { LoginScreen } from "./pages/LoginScreen";
 import { RegisterScreen } from "./pages/RegisterScreen";
 import { DashboardScreen } from "./pages/DashboardScreen";
@@ -20,6 +22,7 @@ import { PendingRequestScreen } from "./pages/PendingRequestScreen";
 import { ClientListScreen } from "./pages/ClientListScreen";
 import { ClientProfileScreen } from "./pages/ClientProfile";
 import { ClientReqListScreen } from "./pages/ClientReqList";
+import { ClientAddScreen } from "./pages/ClientAdd";
 
 import vars, { getIsLoggingInGlobalValue } from "../../vars";
 import { PopUp } from "../../ui/Popups";
@@ -129,6 +132,11 @@ export function AgentScreen() {
                 <Stack.Screen
                   name="ClientReqList"
                   component={ClientReqListScreen}
+                  options={{ headerShown: false }}
+                />
+                <Stack.Screen
+                  name="ClientAdd"
+                  component={ClientAddScreen}
                   options={{ headerShown: false }}
                 />
               </Stack.Navigator>

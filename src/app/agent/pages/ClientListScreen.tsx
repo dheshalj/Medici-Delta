@@ -9,7 +9,7 @@ import {
   ScrollView,
   TouchableOpacity,
 } from "react-native";
-import { Divider } from "react-native-paper";
+import { Divider, Snackbar } from "react-native-paper";
 import vars, { useIsLoggingInGlobal } from "../../../vars";
 
 import { Data } from "../helpers/Data";

@@ -88,7 +88,7 @@ export function RegisterScreen({navigation}: any) {
           title="Domain"
           placeholder="company.lk"
           value={textInput_Domain}
-          onChangeText={t => textInput_Domain_(t)}
+          onChangeText={t => textInput_Domain_(Format.DomainFormat(t))}
         />
 
         {/* // Indicator */}
@@ -192,7 +192,7 @@ export function RegisterScreen({navigation}: any) {
                 රුbalance: 0.0,
                 type: 'agent',
               },
-              err => {
+              (err: any) => {
                 if (err) {
                   setPopup_Error(true);
                   setIsLoading(false);

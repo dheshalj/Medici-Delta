@@ -3,7 +3,17 @@ Cloud;
     - SNS
 
 App;
+    - JWT Auth
     - Hashing Algo
 
-Server;
-    - JWT Auth
+
+Today - (JWT in App, Add client)
+Tommorrow - Admin App
+Friday - testing, popups
+
+
+update
+
+client list profiles popup
+
+Popups

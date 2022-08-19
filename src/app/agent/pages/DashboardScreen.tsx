@@ -9,20 +9,20 @@ import {
 } from "react-native";
 import { Card, Paragraph } from "react-native-paper";
 
-import { LargeTextButton, SmallTextButton, PendReq, PopUp } from "src/ui";
+import { LargeTextButton, SmallTextButton, PendReq, PopUp } from "../../../ui";
 
 import { Utils } from "../../../utils";
 
 import UpArrow from "imgs/up_arrow.svg";
 import DownArrow from "imgs/down_arrow.svg";
 
-import { Backend } from "src/backend";
+import { Backend } from "../../../backend";
 import { Data } from "../helpers/Data";
-import { flushreq } from "src/types";
-import { Cards } from "src/ui/Cards";
-import { Avatar } from "src/ui/Avatar";
+import { flushreq } from "../../../types";
+import { Cards } from "../../../ui/Cards";
+import { Avatar } from "../../../ui/Avatar";
 
-const wait = (timeout) => {
+const wait = (timeout: number) => {
   return new Promise((resolve) => setTimeout(resolve, timeout));
 };
 
@@ -42,26 +42,53 @@ export function DashboardScreen({ route, navigation }: any) {
 
   const onRefresh = React.useCallback(() => {
     setRefreshing(true);
-    wait(2000).then(() => setRefreshing(false));
+    Data.updateClients(indicator).then((req) => {
+      req ? setDataClients(req[0]) : null;
+    });
+    wait(1000).then(() => setRefreshing(false));
   }, []);
 
   React.useEffect(() => {
-    Data.updateClients(indicator).then((users) => {
-      users[0] ? setDataClients(users[0]) : null;
+    const unsubscribe = navigation.addListener("focus", () => {
+      Data.updateClients(indicator).then((req) => {
+        req ? setDataClients(req[0]) : null;
+      });
     });
-  }, [indicator]);
+    return unsubscribe;
+  }, [navigation, indicator]);
 
   const todaysDate = new Date();
-
   const [getDate, setDate] = useState(
     new Date(todaysDate.getTime() + 3 * 24 * 60 * 60 * 1000)
   );
   const [open, setOpen] = useState(false);
 
-  const [isReqLoading, setReqLoading] = useState(false);
-
   const [exRates, setExRates] = useState(Utils.exRates);
   const [dataClients, setDataClients] = useState(Data.clients);
+
+  // Loaders
+  const [isReqLoading, setReqLoading] = useState(false);
+
+  // Popups
+  const [popup_Key, setPopup_Key] = React.useState<[boolean, any]>([
+    false,
+    undefined,
+  ]);
+  const [popup_ErrorSyn, setPopup_ErrorSyn] = React.useState<[boolean, any]>([
+    false,
+    undefined,
+  ]);
+  const [popup_Reason, setPopup_Reason] = React.useState<[boolean, any]>([
+    false,
+    undefined,
+  ]);
+  const [textInput_Syndicate, textInput_Syndicate_] = React.useState("");
+  const [textInput_Reason, textInput_Reason_] = React.useState<
+    "Insufficient Balance" | "SWIFT Delay" | "CEFT Delay"
+  >("Insufficient Balance");
+  const [popup_Success, setPopup_Success] = React.useState(false);
+  const [popup_Declined, setPopup_Declined] = React.useState(false);
+  const [popup_Error, setPopup_Error] = React.useState(false);
 
   return (
     <ScrollView
@@ -140,8 +167,12 @@ export function DashboardScreen({ route, navigation }: any) {
         </View>
 
         {(() => {
+          let clientstates = Object.fromEntries(
+            dataClients.map((client) => [client.indicator, client.state])
+          );
           let arr = [].concat
             .apply([], dataClients.map((client) => client.reqs) as any)
+            .filter((req: flushreq) => clientstates[req.parentId] === "active")
             .filter((req: flushreq) => req.status === "In progress");
           return arr.length > 0 ? (
             arr
@@ -150,7 +181,7 @@ export function DashboardScreen({ route, navigation }: any) {
               .map((req: flushreq) => {
                 return (
                   <PendReq
-                    key={req.id}
+                    key={req.id + Math.floor(Math.random() * 1000).toString()}
                     id={req.id}
                     value={{
                       valIn$: req.amountInUSD,
@@ -159,44 +190,11 @@ export function DashboardScreen({ route, navigation }: any) {
                     lgdtime={new Date(req.lodgedDate)}
                     tbdtime={new Date(req.tobeflushedDate)}
                     onAccept={() => {
-                      Backend.Client.updateReq(
-                        req.id,
-                        req.parentId,
-                        {
-                          status: "Accepted",
-                        },
-                        (err) => {
-                          if (err) {
-                            console.log("Error at DashboardScreen.tsx:188", err);
-                            return;
-                          }
-                          // TODO: Open Popup here
-                          console.warn(`Request ${req.id} has been Accepted`);
-                          Data.updateClients(indicator).then((users) => {
-                            return users ? setDataClients(users[0]) : null;
-                          });
-                        }
-                      );
+                      textInput_Syndicate_('')
+                      setPopup_Key([true, req]);
                     }}
                     onDecline={() => {
-                      Backend.Client.updateReq(
-                        req.id,
-                        req.parentId,
-                        {
-                          status: "Declined",
-                        },
-                        (err) => {
-                          if (err) {
-                            console.log("Error at DashboardScreen.tsx:208", err);
-                            return;
-                          }
-                          // TODO: Open Popup here
-                          console.warn(`Request ${req.id} has been Declined`);
-                          Data.updateClients(indicator).then((users) => {
-                            return users ? setDataClients(users[0]) : null;
-                          });
-                        }
-                      );
+                      setPopup_Reason([true, req]);
                     }}
                   />
                 );
@@ -233,9 +231,12 @@ export function DashboardScreen({ route, navigation }: any) {
             style={styles.reqbutton}
             onPress={() => {
               setReqLoading(true);
-
-              // TODO: Add client here
-
+              navigation.navigate(
+                "ClientAdd" as never,
+                {
+                  details: route.params.details,
+                } as never
+              );
               setReqLoading(false);
             }}
           />
@@ -254,8 +255,115 @@ export function DashboardScreen({ route, navigation }: any) {
           </SmallTextButton>
         </View>
 
+        <PopUp.Key
+        syndicate={syndicate}
+        onSuccess={(req) => {
+          Backend.Client.updateReq(
+            req.id,
+            req.parentId,
+            {
+              status: "Accepted",
+              changedDate: new Date().getTime(),
+            },
+            (err) => {
+              if (err) {
+                console.log("Error at PendingRequestScreen.tsx:136", err);
+                setPopup_Error(true);
+                return;
+              }
+              setPopup_Success(true);
+              Data.updateClients(indicator).then((users) => {
+                return users ? setDataClients(users[0]) : null;
+              });
+            }
+          );
+        }}
+        onDismiss={() => {}}
+        active={[popup_Key, setPopup_Key]}
+        error={[popup_ErrorSyn, setPopup_ErrorSyn]}
+        txt={[textInput_Syndicate, textInput_Syndicate_]}
+      />
+
+      <PopUp.Reason
+        onComplete={(res, req) => {
+          console.log(res, req);
+          Backend.Client.updateReq(
+            req.id,
+            req.parentId,
+            {
+              status: "Declined",
+              changedDate: new Date().getTime(),
+              reason: res,
+            },
+            (err) => {
+              if (err) {
+                console.log("Error at PendingRequestScreen.tsx:156", err);
+                setPopup_Error(true);
+                return;
+              }
+              setPopup_Declined(true);
+              Data.updateClients(indicator).then((users) => {
+                return users ? setDataClients(users[0]) : null;
+              });
+            }
+          );
+        }}
+        onDismiss={() => {}}
+        active={[popup_Reason, setPopup_Reason]}
+        res={[textInput_Reason, textInput_Reason_]}
+      />
+
+      <PopUp.TryAgain
+        onTryAgain={(req) => {
+          textInput_Syndicate_('')
+          setPopup_Key([true, req]);
+        }}
+        onDismiss={() => {}}
+        active={[popup_ErrorSyn, setPopup_ErrorSyn]}
+        res={[textInput_Reason, textInput_Reason_]}
+      />
+
+      <PopUp.Info
+        type="success"
+        title="Request has been Flushed !"
+        button={{
+          text: "Go Back",
+          onPress: () => {
+            setPopup_Success(false);
+          },
+        }}
+        exception={true}
+        active={[popup_Success, setPopup_Success]}
+      />
+
+      <PopUp.Info
+        type="error"
+        title="Flush Request Declined !"
+        button={{
+          text: "Go Back",
+          onPress: () => {
+            setPopup_Declined(false);
+          },
+        }}
+        exception={true}
+        active={[popup_Declined, setPopup_Declined]}
+      />
+
+      <PopUp.Info
+        type="error"
+        title="Error !"
+        button={{
+          text: "Go back",
+          onPress: () => {
+            setPopup_Error(false);
+          },
+        }}
+        exception={true}
+        active={[popup_Error, setPopup_Error]}
+      />
+
         <PopUp.DatePickerModal
-          methods={[open, setOpen, getDate, setDate]}
+          methods={[open, setOpen, getDate, setDate as any]}
           minimumDate={getDate}
         />
       </View>

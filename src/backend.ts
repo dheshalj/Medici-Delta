@@ -1,4 +1,6 @@
-import { setIsLoggingInGlobalValue } from "src/vars";
+import axios from "axios";
+
+import vars, { setIsLoggingInGlobalValue } from "./vars";
 import { Utils } from "./utils";
 
 const baseUrl = "http://13.213.172.95";
@@ -9,6 +11,46 @@ export function shuffle(str: string): string {
 
 export const Backend = {
   Common: {
+    async JWT(type: "login" | "logout" | "refresh"): Promise<{
+      accessToken?: string;
+      refreshToken?: string;
+      err?: boolean;
+    }> {
+      let det = await axios({
+        method: type == "logout" ? "delete" : "post",
+        url: `${baseUrl}/auth/${type}`,
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${vars.tokens.accessToken}`,
+        },
+        data: {
+          token: type == "refresh" ? vars.tokens.refreshToken : null,
+        },
+      })
+        .then((response) => {
+          return {
+            accessToken: response.data.accessToken,
+            refreshToken: response.data.refreshToken,
+          };
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+
+      try {
+        det = det as { accessToken: any; refreshToken: any };
+        vars.tokens = {
+          accessToken: det.accessToken,
+          refreshToken: det.refreshToken,
+        };
+        return det;
+      } catch {
+        return {
+          err: true,
+        };
+      }
+    },
+
     async Login(
       type: "client" | "agent" | "admin",
       indicator: string,
@@ -16,17 +58,28 @@ export const Backend = {
       cb: (err?: string) => void,
       navigation: any
     ) {
+      let token = await this.JWT("login");
+      if (token.err) {
+        cb("failed to acquire token");
+        return;
+      }
+
+      console.log(token);
+
       const loginDetails = await (
         await fetch(
-          `${baseUrl}/weller/${type}s/${indicator.replace(/ /g, "-")}`,
+          `${baseUrl}/knwy/${type}s/${indicator.replace(/ /g, "-")}`,
           {
             method: "GET",
             headers: {
               Accept: "application/json",
+              Authorization: `Bearer ${token.accessToken}`,
             },
           }
         )
       ).text();
+
+      console.log(loginDetails);
 
       if (
         !loginDetails.includes("Failed Error:") &&
@@ -38,11 +91,14 @@ export const Backend = {
           navigation.navigate("Dashboard", {
             details: loginDetails,
           });
+          return;
         } else {
           cb("synd incorrect");
+          return;
         }
       } else {
         cb("user not found");
+        return;
       }
     },
 
@@ -60,20 +116,25 @@ export const Backend = {
         රුbalance?: number;
         type: "client" | "agent" | "admin";
         parent?: string;
+        state?: "active" | "pending";
       },
       cb: (err?: string) => void
     ) {
+      let token = await this.JWT("login");
+      if (token.err) {
+        cb("failed to acquire token");
+        return;
+      }
+
       const registerDetails = await (
         await fetch(
-          `${baseUrl}/weller/${data.type}s/${data.indicator.replace(
-            / /g,
-            "-"
-          )}`,
+          `${baseUrl}/knwy/${data.type}s/${data.indicator.replace(/ /g, "-")}`,
           {
             method: "POST",
             headers: {
               Accept: "application/json",
               "Content-Type": "application/json",
+              Authorization: `Bearer ${token.accessToken}`,
             },
             body: JSON.stringify({
               nameOfUser: data.nameOfUser,
@@ -88,7 +149,7 @@ export const Backend = {
               රුbalance: data.රුbalance,
               type: data.type,
               parent: data.parent ? data.parent : "ND",
-              state: "pending",
+              state: data.state,
               bankAccDetails: {
                 AccountNo: "",
                 BankName: "",
@@ -121,7 +182,7 @@ export const Backend = {
       tobeflushedDate: Date,
       indicator: string,
       cb: (err?: string) => void
-    ) {
+    ): Promise<any> {
       var gendId = (() => {
         var txt = shuffle(Date.now().toString().substring(0, 11));
         return (
@@ -135,7 +196,7 @@ export const Backend = {
 
       const reqDetails = await (
         await fetch(
-          `${baseUrl}/weller/clients/${indicator.replace(
+          `${baseUrl}/knwy/clients/${indicator.replace(
             / /g,
             "-"
           )}/requests/${gendId.replace(/ /g, "-")}`,
@@ -144,9 +205,11 @@ export const Backend = {
             headers: {
               Accept: "application/json",
               "Content-Type": "application/json",
+              Authorization: `Bearer ${vars.tokens.accessToken}`,
             },
             body: JSON.stringify({
               status: "In progress",
+              changedDate: null,
               id: gendId,
               parentId: indicator,
               lodgedDate: lodgedDate,
@@ -173,6 +236,22 @@ export const Backend = {
         )
       ).text();
 
+      if (reqDetails === "Forbidden") {
+        let token = await Backend.Common.JWT("refresh");
+        console.log(token);
+        if (!token.err) {
+          vars.tokens.accessToken = token.accessToken as string;
+        }
+        return this.addReq(
+          amount,
+          currency,
+          lodgedDate,
+          tobeflushedDate,
+          indicator,
+          cb
+        );
+      }
+
       if (
         reqDetails.includes(
           `Done: Document <${gendId.replace(
@@ -190,20 +269,28 @@ export const Backend = {
     async getAllReqsOfUser(indicator: string): Promise<any[]> {
       const requests = await (
         await fetch(
-          `${baseUrl}/weller/clients/${indicator.replace(/ /g, "-")}/requests`,
+          `${baseUrl}/knwy/clients/${indicator.replace(/ /g, "-")}/requests`,
           {
             method: "GET",
             headers: {
               Accept: "application/json",
+              Authorization: `Bearer ${vars.tokens.accessToken}`,
             },
           }
         )
       ).text();
 
+      if (requests === "Forbidden") {
+        let token = await Backend.Common.JWT("refresh");
+        if (!token.err) {
+          vars.tokens.accessToken = token.accessToken as string;
+        }
+        return this.getAllReqsOfUser(indicator);
+      }
+
       try {
         return JSON.parse(requests);
       } catch (err) {
-        console.log("Error at backend.ts:206", err);
         return [];
       }
     },
@@ -213,10 +300,10 @@ export const Backend = {
       indicator: string,
       body: any,
       cb: (err?: string) => void
-    ) {
+    ): Promise<any> {
       const reqDetails = await (
         await fetch(
-          `${baseUrl}/weller/clients/${indicator.replace(
+          `${baseUrl}/knwy/clients/${indicator.replace(
             / /g,
             "-"
           )}/requests/${reqId.replace(/ /g, "-")}`,
@@ -225,11 +312,22 @@ export const Backend = {
             headers: {
               Accept: "application/json",
               "Content-Type": "application/json",
+              Authorization: `Bearer ${vars.tokens.accessToken}`,
             },
             body: JSON.stringify(body),
           }
         )
       ).text();
+
+      console.log(reqDetails);
+
+      if (reqDetails === "Forbidden") {
+        let token = await Backend.Common.JWT("refresh");
+        if (!token.err) {
+          vars.tokens.accessToken = token.accessToken as string;
+        }
+        return this.updateReq(reqId, indicator, body, cb);
+      }
 
       if (
         reqDetails.includes(
@@ -247,17 +345,15 @@ export const Backend = {
 
     async updateUser(indicator: string, body: any, cb: (err?: string) => void) {
       const reqDetails = await (
-        await fetch(
-          `${baseUrl}/weller/clients/${indicator.replace(/ /g, "-")}`,
-          {
-            method: "PATCH",
-            headers: {
-              Accept: "application/json",
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(body),
-          }
-        )
+        await fetch(`${baseUrl}/knwy/clients/${indicator.replace(/ /g, "-")}`, {
+          method: "PATCH",
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${vars.tokens.accessToken}`,
+          },
+          body: JSON.stringify(body),
+        })
       ).text();
 
       if (
@@ -277,14 +373,22 @@ export const Backend = {
   Agent: {
     async getAllUsers(): Promise<any[]> {
       const requests = await (
-        await fetch(`${baseUrl}/weller/clients`, {
-          // TODO: Add `where` prop to server
+        await fetch(`${baseUrl}/knwy/clients`, {
           method: "GET",
           headers: {
             Accept: "application/json",
+            Authorization: `Bearer ${vars.tokens.accessToken}`,
           },
         })
       ).text();
+
+      if (requests === "Forbidden") {
+        let token = await Backend.Common.JWT("refresh");
+        if (!token.err) {
+          vars.tokens.accessToken = token.accessToken as string;
+        }
+        return this.getAllUsers();
+      }
 
       try {
         return JSON.parse(requests);
