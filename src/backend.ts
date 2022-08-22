@@ -398,4 +398,32 @@ export const Backend = {
       }
     },
   },
+  Admin: {
+    async getAllUsers(): Promise<any[]> {
+      const requests = await (
+        await fetch(`${baseUrl}/knwy/agents`, {
+          method: "GET",
+          headers: {
+            Accept: "application/json",
+            Authorization: `Bearer ${vars.tokens.accessToken}`,
+          },
+        })
+      ).text();
+
+      if (requests === "Forbidden") {
+        let token = await Backend.Common.JWT("refresh");
+        if (!token.err) {
+          vars.tokens.accessToken = token.accessToken as string;
+        }
+        return this.getAllUsers();
+      }
+
+      try {
+        return JSON.parse(requests);
+      } catch (err) {
+        console.log("Error at backend.ts:292", err);
+        return [];
+      }
+    },
+  },
 };

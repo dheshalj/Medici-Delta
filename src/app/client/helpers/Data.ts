@@ -1,6 +1,6 @@
-import {Backend} from 'src/backend';
-import {flushreq} from 'src/types';
-import {Utils} from 'src/utils';
+import {Backend} from '../../../backend';
+import {flushreq} from '../../../types';
+import {Utils} from '../../../utils';
 
 export class Data {
   static reqs: [flushreq | never] = [] as never;
@@ -18,6 +18,7 @@ export class Data {
           lodgedDate: el.data.lodgedDate,
           status: el.data.status,
           tobeflushedDate: el.data.tobeflushedDate,
+          changedDate: el.data.changedDate
         });
       },
     );

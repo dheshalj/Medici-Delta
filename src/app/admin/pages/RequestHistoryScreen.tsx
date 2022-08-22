@@ -32,7 +32,7 @@ export function RequestHistoryScreen({route, navigation}: any) {
   } = JSON.parse(route.params.details);
 
   const [exRates, setExRates] = useState(Utils.exRates);
-  const [dataClients, setDataClients] = useState(Data.clients);
+  const [dataClients, setDataClients] = useState(Data.agents);
 
   return (
     <View>
@@ -74,7 +74,7 @@ export function RequestHistoryScreen({route, navigation}: any) {
           <TouchableOpacity
             style={styles.flushreload}
             onPress={() => {
-              Data.updateClients(indicator).then(req => {
+              Data.updateAgents(indicator).then(req => {
                 req ? setDataClients(req[0]) : null;
               });
             }}>

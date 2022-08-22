@@ -1,58 +1,43 @@
-import React from "react";
-import { ScrollView, StyleSheet, View } from "react-native";
-import { Button, Text, Avatar } from "react-native-paper";
+import React from 'react';
+import {ScrollView, StyleSheet, View} from 'react-native';
+import {Button, Text, Avatar} from 'react-native-paper';
 
-import { InputBox, SmallTextButton, PopUp } from "../../../ui";
-import { Backend } from "../../../backend";
-import { Format } from "../../../utils";
-import Errors from "../../../ui/Errors";
-import { ErrorTypes_Register } from "../../../types";
+import {InputBox, SmallTextButton, PopUp} from '../../../ui';
+import {Backend} from '../../../backend';
+import {Format} from '../../../utils';
+import Errors from '../../../ui/Errors';
+import {ErrorTypes_Register} from '../../../types';
 
-export function ClientAddScreen({ route, navigation }: any) {
-  const {
-    nameOfUser,
-    NIC,
-    businessName,
-    BRNumber,
-    mobileNumber,
-    domain,
-    indicator,
-    syndicate,
-  } = JSON.parse(route.params.details);
-
-  // Inputs
-  const [textInput_NameOfClient, textInput_NameOfClient_] = React.useState("");
-  const [textInput_NIC, textInput_NIC_] = React.useState("");
-  const [textInput_BusinessName, textInput_BusinessName_] = React.useState("");
-  const [textInput_BRNumber, textInput_BRNumber_] = React.useState("");
+export function RegisterScreen({navigation}: any) {
+  const [textInput_NameOfClient, textInput_NameOfClient_] = React.useState('');
+  const [textInput_NIC, textInput_NIC_] = React.useState('');
+  const [textInput_BusinessName, textInput_BusinessName_] = React.useState('');
+  const [textInput_BRNumber, textInput_BRNumber_] = React.useState('');
   const [textInput_MobileNumber, textInput_MobileNumber_] =
-    React.useState("+94 ");
-  const [textInput_Domain, textInput_Domain_] = React.useState("");
-  const [textInput_Indicator, textInput_Indicator_] = React.useState("");
-  const [textInput_Syndicate, textInput_Syndicate_] = React.useState("");
+    React.useState('+94 ');
+  const [textInput_Domain, textInput_Domain_] = React.useState('');
+  const [textInput_Indicator, textInput_Indicator_] = React.useState('');
+  const [textInput_Syndicate, textInput_Syndicate_] = React.useState('');
   const [util_SyndicateShow, util_SyndicateShow_] = React.useState(false);
 
-  // Popups
-  const [popup_Success, setPopup_Success] = React.useState(false);
-  const [popup_Error, setPopup_Error] = React.useState(false);
-
-  // Error Display
   const [errorSwitcher, setErrorSwitcher] = React.useState(
-    undefined as ErrorTypes_Register
+    undefined as ErrorTypes_Register,
   );
 
   const [isLoading, setIsLoading] = React.useState(false);
+
+  const [popup_Success, setPopup_Success] = React.useState(false);
+  const [popup_Error, setPopup_Error] = React.useState(false);
 
   return (
     <ScrollView
       alwaysBounceHorizontal={false}
       alwaysBounceVertical={false}
-      bounces={false}
-    >
+      bounces={false}>
       <View style={styles.page}>
-        <Text style={styles.registerHeading}>Register New Client !</Text>
+        <Text style={styles.registerHeading}>Register Yourself Here !</Text>
         <View style={styles.logo}>
-          <Avatar.Image size={120} source={require("imgs/avatar.jpg")} />
+          <Avatar.Image size={120} source={require('imgs/avatar.jpg')} />
         </View>
 
         {/* // Name of the client */}
@@ -60,7 +45,7 @@ export function ClientAddScreen({ route, navigation }: any) {
           title="Name of the client"
           placeholder="John Doe"
           value={textInput_NameOfClient}
-          onChangeText={(t: any) => textInput_NameOfClient_(t)}
+          onChangeText={t => textInput_NameOfClient_(t)}
         />
 
         {/* // NIC number (Digits Only) */}
@@ -69,7 +54,7 @@ export function ClientAddScreen({ route, navigation }: any) {
           placeholder="XXXXXXXXX(XXX)"
           maxLength={12}
           value={textInput_NIC}
-          onChangeText={(t: any) => textInput_NIC_(NICFormat(t))}
+          onChangeText={t => textInput_NIC_(NICFormat(t))}
         />
 
         {/* // Business Name */}
@@ -77,7 +62,7 @@ export function ClientAddScreen({ route, navigation }: any) {
           title="Business Name"
           placeholder="Company LLC"
           value={textInput_BusinessName}
-          onChangeText={(t: any) => textInput_BusinessName_(t)}
+          onChangeText={t => textInput_BusinessName_(t)}
         />
 
         {/* // BR Number */}
@@ -85,7 +70,7 @@ export function ClientAddScreen({ route, navigation }: any) {
           title="BR Number"
           placeholder="XXXXXXXXX"
           value={textInput_BRNumber}
-          onChangeText={(t: any) => textInput_BRNumber_(t)}
+          onChangeText={t => textInput_BRNumber_(t)}
         />
 
         {/* // Primary Mobile Number */}
@@ -93,7 +78,7 @@ export function ClientAddScreen({ route, navigation }: any) {
           title="Primary Mobile Number"
           maxLength={15}
           value={textInput_MobileNumber}
-          onChangeText={(t: any) =>
+          onChangeText={t =>
             textInput_MobileNumber_(Format.MobileNumberFormat(t))
           }
         />
@@ -103,7 +88,7 @@ export function ClientAddScreen({ route, navigation }: any) {
           title="Domain"
           placeholder="company.lk"
           value={textInput_Domain}
-          onChangeText={(t: any) => textInput_Domain_(Format.DomainFormat(t))}
+          onChangeText={t => textInput_Domain_(Format.DomainFormat(t))}
         />
 
         {/* // Indicator */}
@@ -112,9 +97,7 @@ export function ClientAddScreen({ route, navigation }: any) {
           placeholder="1234 56 78 90 12"
           maxLength={16}
           value={textInput_Indicator}
-          onChangeText={(t: any) =>
-            textInput_Indicator_(Format.IndicatorFormat(t))
-          }
+          onChangeText={t => textInput_Indicator_(Format.IndicatorFormat(t))}
         />
 
         {/* // Syndicate */}
@@ -124,27 +107,25 @@ export function ClientAddScreen({ route, navigation }: any) {
           maxLength={7}
           secureTextEntry={!util_SyndicateShow}
           right={{
-            color: "#595959",
+            color: '#595959',
             onPress: () => util_SyndicateShow_(!util_SyndicateShow),
-            icon: util_SyndicateShow ? "eye-off" : "eye",
+            icon: util_SyndicateShow ? 'eye-off' : 'eye',
           }}
           value={textInput_Syndicate}
-          onChangeText={(t: any) =>
-            textInput_Syndicate_(Format.SyndicateFormat(t))
-          }
+          onChangeText={t => textInput_Syndicate_(Format.SyndicateFormat(t))}
         />
 
         <Errors.display
           switcher={errorSwitcher}
           text={{
-            Name: "Name of Client not specified !",
-            NIC: "Invaild NIC Number !",
-            BName: "Bussiness Name not specified !",
-            BRNo: "Invaild BR Number !",
-            MobNo: "Invaild Mobile Number !",
-            Domain: "Invaild Domain !",
-            Indicator: "Indicator must contain 12 digits !",
-            Syndicate: "Syndicate must contain 6 digits !",
+            Name: 'Name of Client not specified !',
+            NIC: 'Invaild NIC Number !',
+            BName: 'Bussiness Name not specified !',
+            BRNo: 'Invaild BR Number !',
+            MobNo: 'Invaild Mobile Number !',
+            Domain: 'Invaild Domain !',
+            Indicator: 'Indicator must contain 12 digits !',
+            Syndicate: 'Syndicate must contain 6 digits !',
           }}
         />
 
@@ -154,44 +135,44 @@ export function ClientAddScreen({ route, navigation }: any) {
           style={styles.registerButton}
           onPress={async () => {
             if (textInput_NameOfClient.length < 1) {
-              setErrorSwitcher("Name");
+              setErrorSwitcher('Name');
               return;
             }
             if (!(textInput_NIC.length === 9 || textInput_NIC.length === 12)) {
-              setErrorSwitcher("NIC");
+              setErrorSwitcher('NIC');
               return;
             }
             if (textInput_BusinessName.length < 1) {
-              setErrorSwitcher("BName");
+              setErrorSwitcher('BName');
               return;
             }
 
             if (textInput_BRNumber.length < 5) {
               // TODO: BR Number length
-              setErrorSwitcher("BRNo");
+              setErrorSwitcher('BRNo');
               return;
             }
 
             if (textInput_MobileNumber.length === 14) {
-              setErrorSwitcher("MobNo");
+              setErrorSwitcher('MobNo');
               return;
             }
 
             if (
               !/^(((?!\-))(xn\-\-)?[a-z0-9\-_]{0,61}[a-z0-9]{1,1}\.)*(xn\-\-)?([a-z0-9\-]{1,61}|[a-z0-9\-]{1,30})\.[a-z]{2,}$/.test(
-                textInput_Domain
+                textInput_Domain,
               )
             ) {
-              setErrorSwitcher("Domain");
+              setErrorSwitcher('Domain');
               return;
             }
 
             if (textInput_Indicator.length !== 16) {
-              setErrorSwitcher("Indicator");
+              setErrorSwitcher('Indicator');
               return;
             }
             if (textInput_Syndicate.length !== 7) {
-              setErrorSwitcher("Syndicate");
+              setErrorSwitcher('Syndicate');
               return;
             }
             setErrorSwitcher(undefined);
@@ -209,9 +190,7 @@ export function ClientAddScreen({ route, navigation }: any) {
                 syndicate: textInput_Syndicate,
                 $balance: 0.0,
                 රුbalance: 0.0,
-                parent: indicator,
-                state: "active",
-                type: "client",
+                type: 'admin',
               },
               (err: any) => {
                 if (err) {
@@ -219,21 +198,20 @@ export function ClientAddScreen({ route, navigation }: any) {
                   setIsLoading(false);
                   return;
                 }
-                textInput_NameOfClient_("");
-                textInput_NIC_("");
-                textInput_BusinessName_("");
-                textInput_BRNumber_("");
-                textInput_MobileNumber_("");
-                textInput_Domain_("");
-                textInput_Indicator_("");
-                textInput_Syndicate_("");
+                textInput_NameOfClient_('');
+                textInput_NIC_('');
+                textInput_BusinessName_('');
+                textInput_BRNumber_('');
+                textInput_MobileNumber_('');
+                textInput_Domain_('');
+                textInput_Indicator_('');
+                textInput_Syndicate_('');
                 setPopup_Success(true);
                 setIsLoading(false);
-              }
+              },
             );
           }}
-          mode="contained"
-        >
+          mode="contained">
           <Text style={styles.registerText}>Register</Text>
         </Button>
 
@@ -241,13 +219,8 @@ export function ClientAddScreen({ route, navigation }: any) {
           type="success"
           title="Successfully Registered !"
           button={{
-            text: "Go Back",
-            onPress: () => navigation.navigate(
-              "Dashboard" as never,
-              {
-                details: route.params.details,
-              } as never
-            ),
+            text: 'Login',
+            onPress: () => navigation.navigate('Login' as never, {} as never),
           }}
           exception={true}
           active={[popup_Success, setPopup_Success]}
@@ -257,18 +230,15 @@ export function ClientAddScreen({ route, navigation }: any) {
           type="error"
           title="Error !"
           button={{
-            text: "Go back",
+            text: 'Go back',
             onPress: () => {},
           }}
           exception={true}
           active={[popup_Error, setPopup_Error]}
         />
 
-        <SmallTextButton
-          textStyle={styles.gbth}
-          onPress={() => navigation.navigate("Dashboard", {})}
-        >
-          Go Back
+        <SmallTextButton onPress={() => navigation.navigate('Login', {})}>
+          Already Registered ? Login
         </SmallTextButton>
       </View>
     </ScrollView>
@@ -276,56 +246,52 @@ export function ClientAddScreen({ route, navigation }: any) {
 }
 
 function NICFormat(t: string): string {
-  return t.replace(/[^0-9]/g, "").trim();
+  return t.replace(/[^0-9]/g, '').trim();
 }
 
 const styles = StyleSheet.create({
   page: {
-    alignContent: "center",
-    justifyContent: "center",
+    alignContent: 'center',
+    justifyContent: 'center',
     flex: 1,
     margin: 50,
-    backgroundColor: "white",
+    backgroundColor: 'white',
   },
   logo: {
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
     marginBottom: 20,
   },
   registerTitles: {
-    fontFamily: "Poppins-Regular",
+    fontFamily: 'Poppins-Regular',
   },
   registerInputs: {
     marginBottom: 20,
     borderRadius: 50,
     fontSize: 15,
-    fontFamily: "Poppins-Regular",
+    fontFamily: 'Poppins-Regular',
   },
   forgotSyndicate: {
     fontSize: 12,
-    color: "#FFB800",
+    color: '#FFB800',
   },
   register: {
     fontSize: 12,
   },
   registerHeading: {
-    fontFamily: "Poppins-Bold",
-    color: "#608EE9",
-    textAlign: "center",
+    fontFamily: 'Poppins-Bold',
+    color: '#608EE9',
+    textAlign: 'center',
     marginBottom: 15,
   },
   registerButton: {
-    backgroundColor: "#608EE9",
+    backgroundColor: '#608EE9',
     borderRadius: 10,
     marginBottom: 10,
   },
   registerText: {
-    color: "#fff",
-    textAlign: "center",
-    fontFamily: "Poppins-Regular",
-  },
-  gbth: {
-    fontFamily: "Poppins-Regular",
-    color: "#B9BAC8",
+    color: '#fff',
+    textAlign: 'center',
+    fontFamily: 'Poppins-Regular',
   },
 });

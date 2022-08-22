@@ -221,7 +221,6 @@ export const PopUp = {
   TryAgain: (props: {
     onTryAgain: (req: any) => void;
     onDismiss: () => void;
-    res: [get: string, set: Dispatch<SetStateAction<"Insufficient Balance" | "SWIFT Delay" | "CEFT Delay">>];
     active: [get: [boolean, any], set: Dispatch<SetStateAction<[boolean, any]>>];
   }) => {
     const [isFocus, setIsFocus] = useState(false);

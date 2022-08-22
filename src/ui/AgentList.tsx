@@ -5,36 +5,22 @@ import {
   View,
   StyleSheet,
   TouchableOpacity,
-  GestureResponderEvent,
 } from "react-native";
-import { combineTransition } from "react-native-reanimated";
 
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
-import { Backend } from "../backend";
-import { tabheader, user } from "../types";
+import { user } from "../types";
 
-export const ClientList = (props: {
+export const AgentList = (props: {
   client: user;
   parentID: string;
-  state: tabheader;
-  onPress?: ((state: tabheader, parent: string) => void) | undefined;
+  onPress?: (() => void) | undefined;
 }) => {
   return (
     <TouchableOpacity
       onPress={() =>
         props.onPress
-          ? props.onPress(
-              props.state,
-        
-              props.state === "pending"
-                ? props.parentID
-                : props.state === "active"
-                ? props.parentID
-                : props.state === "reject"
-                ? props.parentID
-                : props.parentID
-            )
-          : null
+          ? props.onPress()
+          : {}
       }
     >
       <View style={styles.clientlist}>
@@ -42,14 +28,7 @@ export const ClientList = (props: {
           <Text
             style={{
               ...styles.client_name,
-              color:
-                props.state === "pending"
-                  ? "#FFB800"
-                  : props.state === "active"
-                  ? "#2DC897"
-                  : props.state === "reject"
-                  ? "#F17A92"
-                  : "#2F394E",
+              color: "#2F394E",
             }}
           >
             {props.client.nameOfUser}
@@ -60,17 +39,9 @@ export const ClientList = (props: {
         <View style={styles.client_stat}>
           <TouchableOpacity style={styles.clientliststatus} disabled>
             <Icon
-              size={12}
-              name={"checkbox-blank-circle"}
-              color={
-                props.state === "pending"
-                  ? "#FFB800"
-                  : props.state === "active"
-                  ? "#2DC897"
-                  : props.state === "reject"
-                  ? "#F17A92"
-                  : "#2F394E"
-              }
+              size={17}
+              name={"arrow-right"} // checkbox-blank-circle
+              color={"#2DC897"}
             />
           </TouchableOpacity>
         </View>

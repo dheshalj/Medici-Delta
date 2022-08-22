@@ -226,7 +226,6 @@ export function PendingRequestScreen({ route, navigation }: any) {
         }}
         onDismiss={() => {}}
         active={[popup_ErrorSyn, setPopup_ErrorSyn]}
-        res={[textInput_Reason, textInput_Reason_]}
       />
 
       <PopUp.Info

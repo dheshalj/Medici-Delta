@@ -4,20 +4,17 @@ import {Button, Text} from 'react-native-paper';
 
 import Logo from 'imgs/logo.svg';
 
-import {useIsLoggingInGlobal} from 'src/vars';
-import {InputBox, SmallTextButton} from 'src/ui';
-import {Backend} from 'src/backend';
-import Errors from 'src/ui/Errors';
-import {ErrorTypes_Login} from 'src/types';
+import {SmallTextButton, InputBox} from '../../../ui';
+import {Backend} from '../../../backend';
 
 export function LoginScreen({navigation}: any) {
-
   const [textIndicator, setTextIndicator] = React.useState('');
   const [textSyndicate, setTextSyndicate] = React.useState('');
 
-  const [errorSwitcher, setErrorSwitcher] = React.useState(
-    undefined as ErrorTypes_Login,
-  );
+  const [isError, showError] = React.useState({
+    isUserNotFound: false,
+    isSyndMismatch: false,
+  });
 
   const [isLoading, setIsLoading] = React.useState(false);
 
@@ -53,54 +50,41 @@ export function LoginScreen({navigation}: any) {
         Forgot your Syndicate ?
       </SmallTextButton>
 
-      <Errors.display
-        switcher={errorSwitcher}
-        text={{
-          UserNotExist: "User doesn't exist !",
-          SyndMismatch: 'Syndicate Incorrect !',
-          Indicator: 'Indicator must contain 12 digits !',
-          Syndicate: 'Syndicate must contain 6 digits !',
-        }}
-      />
+      {isError.isUserNotFound ? (
+        <Text style={styles.errorReason}>User doesn't exist !</Text>
+      ) : isError.isSyndMismatch ? (
+        <Text style={styles.errorReason}>Syndicate is incorrect !</Text>
+      ) : null}
 
       <Button
         uppercase={false}
         loading={isLoading}
         style={styles.authorizeButton}
         onPress={async () => {
-          if (textIndicator.length !== 16) {
-            setErrorSwitcher('Indicator');
-            return;
-          }
-          if (textSyndicate.length !== 7) {
-            setErrorSwitcher('Syndicate');
-            return;
-          }
-
-          setIsLoading(true);
-          Backend.Common.Login(
-            'client',
-            textIndicator,
-            textSyndicate,
-            err => {
-              if (err === 'user not found') {
-                setErrorSwitcher('UserNotExist');
-                setIsLoading(false);
-                return;
-              }
-              if (err === 'synd incorrect') {
-                setErrorSwitcher('SyndMismatch');
+          if (textIndicator.length === 16 && textSyndicate.length === 7) {
+            setIsLoading(true);
+            Backend.Common.Login(
+              'admin',
+              textIndicator,
+              textSyndicate,
+              err => {
+                if (err === 'user not found') {
+                  setIsLoading(false);
+                  return;
+                }
+                if (err === 'synd incorrect') {
+                  setTextSyndicate('');
+                  setIsLoading(false);
+                  return;
+                }
+                setTextIndicator('');
                 setTextSyndicate('');
                 setIsLoading(false);
-                return;
-              }
-              setErrorSwitcher(undefined);
-              setTextIndicator('');
-              setTextSyndicate('');
-              setIsLoading(false);
-            },
-            navigation,
-          );
+              },
+              navigation,
+              showError,
+            );
+          }
         }}
         mode="contained">
         <Text style={styles.authorizeText}>Authorize</Text>

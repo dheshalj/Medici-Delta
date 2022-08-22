@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "medici_delta",
-    "slug": "medici_delta",
+    "slug": "medici-delta",
     "scheme": "medici-delta",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -26,6 +26,7 @@
         "foregroundImage": "./assets/imgs/branding/adaptive-icon.png",
         "backgroundColor": "#FFFFFF"
       },
+      "versionCode": 1,
       "package": "com.dheshalj.medici_delta"
     },
     "web": {

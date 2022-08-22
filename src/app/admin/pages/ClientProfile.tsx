@@ -193,7 +193,7 @@ export function ClientProfileScreen({ route, navigation }: any) {
                 console.log("Error at ClientList.tsx:238", err);
                 return;
               }
-              Data.updateClients(client.user.indicator);
+              Data.updateAgents(client.user.indicator);
               keyForWhat == "Accept"
                 ? setPopup_Accepted(true)
                 : keyForWhat == "Activate"

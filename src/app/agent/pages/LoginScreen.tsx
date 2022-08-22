@@ -4,12 +4,12 @@ import {Button, Text} from 'react-native-paper';
 
 import Logo from 'imgs/logo.svg';
 
-import {SmallTextButton, InputBox} from 'src/ui';
-import {Backend} from 'src/backend';
+import {SmallTextButton, InputBox} from '../../../ui';
+import {Backend} from '../../../backend';
 
 export function LoginScreen({navigation}: any) {
-  const [textIndicator, setTextIndicator] = React.useState('1111 11 11 11 11');
-  const [textSyndicate, setTextSyndicate] = React.useState('111 111');
+  const [textIndicator, setTextIndicator] = React.useState('');
+  const [textSyndicate, setTextSyndicate] = React.useState('');
 
   const [isError, showError] = React.useState({
     isUserNotFound: false,
@@ -82,7 +82,6 @@ export function LoginScreen({navigation}: any) {
                 setIsLoading(false);
               },
               navigation,
-              showError,
             );
           }
         }}
@@ -90,9 +89,9 @@ export function LoginScreen({navigation}: any) {
         <Text style={styles.authorizeText}>Authorize</Text>
       </Button>
 
-      <SmallTextButton onPress={() => navigation.navigate('Register', {})}>
+      {/* <SmallTextButton onPress={() => navigation.navigate('Register', {})}>
         Are you New to this Platform ? Register
-      </SmallTextButton>
+      </SmallTextButton> */}
     </View>
   );
 }

@@ -8,7 +8,7 @@ import { Format } from "../../../utils";
 import Errors from "../../../ui/Errors";
 import { ErrorTypes_Register } from "../../../types";
 
-export function ClientAddScreen({ route, navigation }: any) {
+export function AgentAddScreen({ route, navigation }: any) {
   const {
     nameOfUser,
     NIC,
@@ -50,14 +50,14 @@ export function ClientAddScreen({ route, navigation }: any) {
       bounces={false}
     >
       <View style={styles.page}>
-        <Text style={styles.registerHeading}>Register New Client !</Text>
+        <Text style={styles.registerHeading}>Register New Agent !</Text>
         <View style={styles.logo}>
           <Avatar.Image size={120} source={require("imgs/avatar.jpg")} />
         </View>
 
         {/* // Name of the client */}
         <InputBox
-          title="Name of the client"
+          title="Name of the agent"
           placeholder="John Doe"
           value={textInput_NameOfClient}
           onChangeText={(t: any) => textInput_NameOfClient_(t)}
@@ -211,7 +211,7 @@ export function ClientAddScreen({ route, navigation }: any) {
                 රුbalance: 0.0,
                 parent: indicator,
                 state: "active",
-                type: "client",
+                type: "agent",
               },
               (err: any) => {
                 if (err) {
@@ -234,7 +234,7 @@ export function ClientAddScreen({ route, navigation }: any) {
           }}
           mode="contained"
         >
-          <Text style={styles.registerText}>Register</Text>
+          <Text style={styles.registerText}>Create Agent</Text>
         </Button>
 
         <PopUp.Info
@@ -266,7 +266,7 @@ export function ClientAddScreen({ route, navigation }: any) {
 
         <SmallTextButton
           textStyle={styles.gbth}
-          onPress={() => navigation.navigate("Dashboard", {})}
+          onPress={() => navigation.pop(1)}
         >
           Go Back
         </SmallTextButton>

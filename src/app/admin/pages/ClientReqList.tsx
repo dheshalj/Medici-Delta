@@ -23,7 +23,7 @@ export function ClientReqListScreen({ route, navigation }: any) {
   };
 
   const [exRates, setExRates] = useState(Utils.exRates);
-  const [dataClients, setDataClients] = useState(Data.clients);
+  const [dataClients, setDataClients] = useState(Data.agents);
 
   return (
     <View>

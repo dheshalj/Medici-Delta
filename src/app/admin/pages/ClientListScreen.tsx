@@ -33,12 +33,12 @@ export function ClientListScreen({ route, navigation }: any) {
 
   const [exRates, setExRates] = useState(Utils.exRates);
 
-  const [dataClients, setDataClients] = useState(Data.clients);
+  const [dataClients, setDataClients] = useState(Data.agents);
   const [dataAllClients, setDataAllClients] = useState(Data.allClients);
 
   React.useEffect(() => {
     navigation.addListener("focus", () => {
-      Data.updateClients(indicator).then((users) => {
+      Data.updateAgents(indicator).then((users) => {
         users[0] ? setDataClients(users[0]) : null;
         users[1] ? setDataAllClients(users[1]) : null;
       });

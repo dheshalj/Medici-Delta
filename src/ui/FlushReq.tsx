@@ -1,5 +1,5 @@
 import React from "react";
-import { Text, View, StyleSheet, TouchableOpacity } from "react-native";
+import { Text, View, StyleSheet, TouchableOpacity, GestureResponderEvent } from "react-native";
 
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 
@@ -17,10 +17,11 @@ export const FlushReq = (props: {
   tbdtime?: Date;
   notShowStatus?: boolean;
   overrideIcon?: string;
+  onPress?: (event: GestureResponderEvent) => void
 }) => {
   return (
     <View style={styles.historylist}>
-      <TouchableOpacity style={styles.historylistbutton}>
+      <TouchableOpacity onPress={props.onPress} style={styles.historylistbutton}>
         <Icon
           size={15}
           name={
@@ -82,10 +83,6 @@ function formatDate(date?: Date): string {
   if (!date) {
     return "undefined";
   }
-
-  let da = Moment(date).format("DD");
-  let mo = Moment(date).format("MM");
-  let ye = Moment(date).format("YYYY");
   return `${Moment(date).format("DD")}-${Moment(date).format("MMM")} | ${Moment(
     date
   ).format("hh:mma")}`;

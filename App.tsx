@@ -1,41 +1,39 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import React from 'react';
-import {
-  Text,
-  View,
-  StyleSheet,
-  TouchableOpacity,
-} from 'react-native';
+import React from "react";
+import { Text, View, StyleSheet, TouchableOpacity } from "react-native";
 
-import {NavigationContainer} from '@react-navigation/native';
-import {createNativeStackNavigator} from '@react-navigation/native-stack';
+import { NavigationContainer } from "@react-navigation/native";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
-import {ClientScreen} from './src/app/client';
-import {AgentScreen} from 'src/app/agent';
+import { ClientScreen } from "./src/app/client";
+import { AgentScreen } from "./src/app/agent";
+import { AdminScreen } from "./src/app/admin";
 
-function ChooseScreen({navigation}: any) {
+function ChooseScreen({ navigation }: any) {
   return (
     <View style={styles.container}>
       <TouchableOpacity
         style={styles.button}
         onPress={() => {
-          navigation.navigate('Client', {});
-        }}>
+          navigation.navigate("Client", {});
+        }}
+      >
         <Text>Client</Text>
       </TouchableOpacity>
       <TouchableOpacity
         style={styles.button}
         onPress={() => {
-          navigation.navigate('Agent', {});
-        }}>
+          navigation.navigate("Agent", {});
+        }}
+      >
         <Text>Agent</Text>
       </TouchableOpacity>
       <TouchableOpacity
-        style={styles._button}
-        disabled
+        style={styles.button}
         onPress={() => {
-          navigation.navigate('Admin', {});
-        }}>
+          navigation.navigate("Admin", {});
+        }}
+      >
         <Text>Admin</Text>
       </TouchableOpacity>
     </View>
@@ -44,29 +42,29 @@ function ChooseScreen({navigation}: any) {
 
 const Stack = createNativeStackNavigator();
 
-export default () => {  
+export default () => {
   return (
     <NavigationContainer>
       <Stack.Navigator initialRouteName="Choose">
         <Stack.Screen
           name="Choose"
           component={ChooseScreen}
-          options={{headerShown: false}}
+          options={{ headerShown: false }}
         />
         <Stack.Screen
           name="Client"
           component={ClientScreen}
-          options={{headerShown: false}}
+          options={{ headerShown: false }}
         />
         <Stack.Screen
           name="Agent"
           component={AgentScreen}
-          options={{headerShown: false}}
+          options={{ headerShown: false }}
         />
         <Stack.Screen
           name="Admin"
-          component={ClientScreen}
-          options={{headerShown: false}}
+          component={AdminScreen}
+          options={{ headerShown: false }}
         />
       </Stack.Navigator>
     </NavigationContainer>
@@ -76,17 +74,17 @@ export default () => {
 const styles = StyleSheet.create({
   centeredView: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     marginTop: 22,
   },
   modalView: {
     margin: 20,
-    backgroundColor: 'white',
+    backgroundColor: "white",
     borderRadius: 20,
     padding: 35,
-    alignItems: 'center',
-    shadowColor: '#000',
+    alignItems: "center",
+    shadowColor: "#000",
     shadowOffset: {
       width: 0,
       height: 2,
@@ -97,36 +95,36 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: "center",
     paddingHorizontal: 10,
   },
   button: {
-    alignItems: 'center',
-    backgroundColor: '#DDDDDD',
+    alignItems: "center",
+    backgroundColor: "#DDDDDD",
     padding: 10,
     margin: 5,
     borderRadius: 10,
   },
   _button: {
-    alignItems: 'center',
-    backgroundColor: '#EEEEEE',
+    alignItems: "center",
+    backgroundColor: "#EEEEEE",
     padding: 10,
     margin: 5,
     borderRadius: 10,
   },
   buttonOpen: {
-    backgroundColor: '#F194FF',
+    backgroundColor: "#F194FF",
   },
   buttonClose: {
-    backgroundColor: '#2196F3',
+    backgroundColor: "#2196F3",
   },
   textStyle: {
-    color: 'white',
-    fontWeight: 'bold',
-    textAlign: 'center',
+    color: "white",
+    fontWeight: "bold",
+    textAlign: "center",
   },
   modalText: {
     marginBottom: 15,
-    textAlign: 'center',
+    textAlign: "center",
   },
 });

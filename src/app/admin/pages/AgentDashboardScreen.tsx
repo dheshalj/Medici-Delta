@@ -7,9 +7,15 @@ import {
   ScrollView,
   RefreshControl,
 } from "react-native";
-import { Card, Paragraph } from "react-native-paper";
+import { Card, Modal, Paragraph } from "react-native-paper";
 
-import { LargeTextButton, SmallTextButton, PendReq, PopUp } from "../../../ui";
+import {
+  LargeTextButton,
+  SmallTextButton,
+  PendReq,
+  PopUp,
+  ClientList,
+} from "../../../ui";
 
 import { Utils } from "../../../utils";
 
@@ -18,15 +24,16 @@ import DownArrow from "imgs/down_arrow.svg";
 
 import { Backend } from "../../../backend";
 import { Data } from "../helpers/Data";
-import { flushreq } from "../../../types";
+import { flushreq, user } from "../../../types";
 import { Cards } from "../../../ui/Cards";
 import { Avatar } from "../../../ui/Avatar";
+import { AgentList } from "../../../ui/AgentList";
 
 const wait = (timeout: number) => {
   return new Promise((resolve) => setTimeout(resolve, timeout));
 };
 
-export function DashboardScreen({ route, navigation }: any) {
+export function AgentDashboardScreen({ route, navigation }: any) {
   const {
     nameOfUser,
     NIC,
@@ -38,11 +45,15 @@ export function DashboardScreen({ route, navigation }: any) {
     syndicate,
   } = JSON.parse(route.params.details);
 
+  const agent = route.params.agent;
+
   const [refreshing, setRefreshing] = React.useState(false);
+
+  const [isLoading, setisLoading] = React.useState(false);
 
   const onRefresh = React.useCallback(() => {
     setRefreshing(true);
-    Data.updateClients(indicator).then((req) => {
+    Data.updateClients(agent.indicator).then((req) => {
       req ? setDataClients(req[0]) : null;
     });
     wait(1000).then(() => setRefreshing(false));
@@ -50,45 +61,22 @@ export function DashboardScreen({ route, navigation }: any) {
 
   React.useEffect(() => {
     const unsubscribe = navigation.addListener("focus", () => {
-      Data.updateClients(indicator).then((req) => {
+      setisLoading(true);
+      setDataClients([] as unknown as [any]);
+      Data.updateClients(agent.indicator).then((req) => {
+        setisLoading(false);
         req ? setDataClients(req[0]) : null;
       });
+      console.log(dataClients);
     });
     return unsubscribe;
   }, [navigation, indicator]);
-
-  const todaysDate = new Date();
-  const [getDate, setDate] = useState(
-    new Date(todaysDate.getTime() + 3 * 24 * 60 * 60 * 1000)
-  );
-  const [open, setOpen] = useState(false);
 
   const [exRates, setExRates] = useState(Utils.exRates);
   const [dataClients, setDataClients] = useState(Data.clients);
 
   // Loaders
   const [isReqLoading, setReqLoading] = useState(false);
-
-  // Popups
-  const [popup_Key, setPopup_Key] = React.useState<[boolean, any]>([
-    false,
-    undefined,
-  ]);
-  const [popup_ErrorSyn, setPopup_ErrorSyn] = React.useState<[boolean, any]>([
-    false,
-    undefined,
-  ]);
-  const [popup_Reason, setPopup_Reason] = React.useState<[boolean, any]>([
-    false,
-    undefined,
-  ]);
-  const [textInput_Syndicate, textInput_Syndicate_] = React.useState("");
-  const [textInput_Reason, textInput_Reason_] = React.useState<
-    "Insufficient Balance" | "SWIFT Delay" | "CEFT Delay"
-  >("Insufficient Balance");
-  const [popup_Success, setPopup_Success] = React.useState(false);
-  const [popup_Declined, setPopup_Declined] = React.useState(false);
-  const [popup_Error, setPopup_Error] = React.useState(false);
 
   return (
     <ScrollView
@@ -102,12 +90,12 @@ export function DashboardScreen({ route, navigation }: any) {
       <View>
         <Avatar
           img={require("imgs/avatar.jpg")}
-          name={nameOfUser}
+          name={agent.nameOfUser}
           cb={() => {
             navigation.navigate(
               "Profile" as never,
               {
-                details: route.params.details,
+                details: JSON.stringify(agent),
               } as never
             );
           }}
@@ -150,8 +138,8 @@ export function DashboardScreen({ route, navigation }: any) {
         </View>
 
         <View style={styles.pendview}>
-          <Text style={styles.pendreq}>Pending Request</Text>
-          <SmallTextButton
+          <Text style={styles.pendreq}>Client List</Text>
+          {/* <SmallTextButton
             textStyle={styles.pendhis}
             onPress={() => {
               navigation.navigate(
@@ -162,65 +150,67 @@ export function DashboardScreen({ route, navigation }: any) {
               );
             }}
           >
-            Request History
-          </SmallTextButton>
+            Show All Agents
+          </SmallTextButton> */}
         </View>
 
-        {(() => {
-          let clientstates = Object.fromEntries(
-            dataClients.map((client) => [client.indicator, client.state])
-          );
-          let arr = [].concat
-            .apply([], dataClients.map((client) => client.reqs) as any)
-            .filter((req: flushreq) => clientstates[req.parentId] === "active")
-            .filter((req: flushreq) => req.status === "In progress");
-          return arr.length > 0 ? (
-            arr
-              .sort((a: flushreq, b: flushreq) => a.lodgedDate - b.lodgedDate)
-              .slice(0, 2)
-              .map((req: flushreq) => {
+        <ScrollView style={styles.agentlist}>
+          {(() => {
+            let arr = [].concat.apply(
+              [],
+              dataClients.map((client) => client) as any
+            );
+
+            return isLoading ? (
+              <Text
+                style={{ textAlign: "center", marginTop: 70, marginBottom: 70 }}
+              >
+                Loading...
+              </Text>
+            ) : arr.length > 0 ? (
+              arr.slice(0, 3).map((cli: user) => {
                 return (
-                  <PendReq
-                    key={req.id + Math.floor(Math.random() * 1000).toString()}
-                    id={req.id}
-                    value={{
-                      valIn$: req.amountInUSD,
-                      valInLKR: req.amountInLKR,
-                    }}
-                    lgdtime={new Date(req.lodgedDate)}
-                    tbdtime={new Date(req.tobeflushedDate)}
-                    onAccept={() => {
-                      textInput_Syndicate_("");
-                      setPopup_Key([true, req]);
-                    }}
-                    onDecline={() => {
-                      setPopup_Reason([true, req]);
+                  <ClientList
+                    key={cli.indicator}
+                    client={cli}
+                    parentID={indicator}
+                    state={cli.state}
+                    onPress={(state, parent) => {
+                      navigation.navigate(
+                        "ClientDashboard" as never,
+                        {
+                          details: route.params.details,
+                          client: cli,
+                        } as never
+                      );
                     }}
                   />
                 );
               })
-          ) : (
-            <Text
-              style={{ textAlign: "center", marginTop: 70, marginBottom: 70 }}
-            >
-              No Pending Requests
-            </Text>
-          );
-        })()}
+            ) : (
+              <Text
+                style={{ textAlign: "center", marginTop: 70, marginBottom: 70 }}
+              >
+                No Clients
+              </Text>
+            );
+          })()}
+        </ScrollView>
 
         <View style={styles.showpendreqview}>
           <SmallTextButton
             textStyle={styles.showpendreq}
             onPress={() => {
               navigation.navigate(
-                "PendingRequest" as never,
+                "AllClients" as never,
                 {
                   details: route.params.details,
+                  agent: route.params.agent,
                 } as never
               );
             }}
           >
-            Show All Pending Requests
+            Show All Clients
           </SmallTextButton>
         </View>
 
@@ -231,140 +221,24 @@ export function DashboardScreen({ route, navigation }: any) {
             style={styles.reqbutton}
             onPress={() => {
               setReqLoading(true);
-              navigation.navigate(
-                "ClientAdd" as never,
-                {
-                  details: route.params.details,
-                } as never
-              );
+              // navigation.navigate(
+              //   "ClientAdd" as never,
+              //   {
+              //     details: route.params.details,
+              //   } as never
+              // );
               setReqLoading(false);
             }}
           />
           <SmallTextButton
-            textStyle={styles.clientlist}
+            textStyle={styles.goback}
             onPress={() => {
-              navigation.navigate(
-                "ClientList" as never,
-                {
-                  details: route.params.details,
-                } as never
-              );
+              navigation.goBack();
             }}
           >
-            Client List
+            Go Back
           </SmallTextButton>
         </View>
-
-        <PopUp.Key
-          syndicate={syndicate}
-          onSuccess={(req) => {
-            Backend.Client.updateReq(
-              req.id,
-              req.parentId,
-              {
-                status: "Accepted",
-                changedDate: new Date().getTime(),
-              },
-              (err) => {
-                if (err) {
-                  console.log("Error at PendingRequestScreen.tsx:136", err);
-                  setPopup_Error(true);
-                  return;
-                }
-                setPopup_Success(true);
-                Data.updateClients(indicator).then((users) => {
-                  return users ? setDataClients(users[0]) : null;
-                });
-              }
-            );
-          }}
-          onDismiss={() => {}}
-          active={[popup_Key, setPopup_Key]}
-          error={[popup_ErrorSyn, setPopup_ErrorSyn]}
-          txt={[textInput_Syndicate, textInput_Syndicate_]}
-        />
-
-        <PopUp.Reason
-          onComplete={(res, req) => {
-            console.log(res, req);
-            Backend.Client.updateReq(
-              req.id,
-              req.parentId,
-              {
-                status: "Declined",
-                changedDate: new Date().getTime(),
-                reason: res,
-              },
-              (err) => {
-                if (err) {
-                  console.log("Error at PendingRequestScreen.tsx:156", err);
-                  setPopup_Error(true);
-                  return;
-                }
-                setPopup_Declined(true);
-                Data.updateClients(indicator).then((users) => {
-                  return users ? setDataClients(users[0]) : null;
-                });
-              }
-            );
-          }}
-          onDismiss={() => {}}
-          active={[popup_Reason, setPopup_Reason]}
-          res={[textInput_Reason, textInput_Reason_]}
-        />
-
-        <PopUp.TryAgain
-          onTryAgain={(req) => {
-            textInput_Syndicate_("");
-            setPopup_Key([true, req]);
-          }}
-          onDismiss={() => {}}
-          active={[popup_ErrorSyn, setPopup_ErrorSyn]}
-        />
-
-        <PopUp.Info
-          type="success"
-          title="Request has been Flushed !"
-          button={{
-            text: "Go Back",
-            onPress: () => {
-              setPopup_Success(false);
-            },
-          }}
-          exception={true}
-          active={[popup_Success, setPopup_Success]}
-        />
-
-        <PopUp.Info
-          type="error"
-          title="Flush Request Declined !"
-          button={{
-            text: "Go Back",
-            onPress: () => {
-              setPopup_Declined(false);
-            },
-          }}
-          exception={true}
-          active={[popup_Declined, setPopup_Declined]}
-        />
-
-        <PopUp.Info
-          type="error"
-          title="Error !"
-          button={{
-            text: "Go back",
-            onPress: () => {
-              setPopup_Error(false);
-            },
-          }}
-          exception={true}
-          active={[popup_Error, setPopup_Error]}
-        />
-
-        <PopUp.DatePickerModal
-          methods={[open, setOpen, getDate, setDate as any]}
-          minimumDate={getDate}
-        />
       </View>
     </ScrollView>
   );
@@ -492,6 +366,7 @@ const styles = StyleSheet.create({
   showpendreqview: {
     marginRight: 20,
     marginBottom: 15,
+    marginTop: 10,
     alignItems: "flex-end",
     justifyContent: "flex-end",
   },
@@ -504,22 +379,25 @@ const styles = StyleSheet.create({
   addnewclient: {
     marginRight: 20,
     marginLeft: 20,
-    marginTop: 20,
     alignItems: "center",
     justifyContent: "center",
   },
-  clientlist: {
+  goback: {
     fontFamily: "Poppins-Medium",
     fontSize: 13,
     textAlign: "right",
-    flex: 1,
     marginTop: 10,
-    color: "#2F394E",
+    color: "#B9BAC8",
   },
   pendreqinput: {
     width: "100%",
   },
   reqbutton: {
     marginBottom: 0,
+    fontFamily: "Poppins-Medium",
+  },
+  agentlist: {
+    marginRight: 30,
+    marginLeft: 30,
   },
 });
